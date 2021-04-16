@@ -2,7 +2,7 @@
 
 module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector) => {
   return sequelize.define('Paquete', {
-
+    
     codigo: {
       type: DataTypes.STRING(128),
       primaryKey: true,
@@ -25,6 +25,11 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
         model: Estacion,
         key: 'codigo'
       }
+    },
+    codigo_barra: {
+      type: DataTypes.STRING(128),
+      primaryKey: true,
+      allowNull: false,
     },
     codigo_maquina: {
       type: DataTypes.STRING(128),
@@ -50,14 +55,11 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
         key: 'codigo'
       }
     },
-    codigo_barras: {
-      type: DataTypes.STRING(128)
-    },
     fecha_sys: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
     },
     hora_sys: {
-      type: DataTypes.DATE,
+      type: DataTypes.TIME,
     },
     finalizado: {
       type: DataTypes.BOOLEAN

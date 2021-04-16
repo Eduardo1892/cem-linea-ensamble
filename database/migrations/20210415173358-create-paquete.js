@@ -25,6 +25,11 @@ module.exports = {
           key: 'codigo',
         }
       },
+      codigo_barra: {
+        type: Sequelize.STRING(128),
+        primaryKey: true,
+        allowNull: false,
+      },
       codigo_maquina: {
         type: Sequelize.STRING(128),
         allowNull: false,
@@ -49,14 +54,11 @@ module.exports = {
           key: 'codigo',
         }
       },
-      codigo_barra: {
-        type: Sequelize.STRING(128),
-      },
       fecha_sys: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
       },
       hora_sys: {
-        type: Sequelize.DATE,
+        type: Sequelize.TIME,
       },
       finalizado: {
         type: Sequelize.BOOLEAN

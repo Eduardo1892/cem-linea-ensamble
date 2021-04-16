@@ -20,8 +20,9 @@ module.exports = {
             key: 'codigo'
         }
       },
-      requerido: {
-        type: Sequelize.BOOLEAN,
+      cantidad: {
+        type: Sequelize.INTEGER,
+        defaultValue: 1,
       }
     });
   },

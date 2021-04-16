@@ -21,8 +21,9 @@ module.exports = (sequelize, DataTypes, Estacion, Item) => {
           key: 'codigo'
       }
     },
-    requerido: {
-      type: DataTypes.BOOLEAN,
+    cantidad: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
     }
 
   }, {

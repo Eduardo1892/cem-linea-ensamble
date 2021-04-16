@@ -20,5 +20,6 @@ module.exports = {
   migrationStorageTableName: "sequelize_migrations",
   define: {
     timestamps: false
-  }
+  },
+  logging: false,
 }
