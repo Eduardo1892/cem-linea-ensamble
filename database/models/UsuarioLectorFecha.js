@@ -22,7 +22,8 @@ module.exports = (sequelize, DataTypes, Usuario, Lector) => {
     },
     fecha: {
       type: DataTypes.DATE,
-      allowNull: false
+      primaryKey: true,
+      allowNull: false,
     }
     
   }, {

@@ -1,8 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { listarLectores } = require('../controllers/lectorController')
+const { 
+    crearLector,
+    listarLectores,
+    modificarLector,
+    eliminarLector,
+} = require('../controllers/lectorController')
 
 
-router.get('/listar', listarLectores)
+router.post('/crear', crearLector);
+router.get('/listar', listarLectores);
+router.put('/modificar', modificarLector);
+router.delete('/eliminar', eliminarLector);
 
 module.exports = router;

@@ -22,6 +22,7 @@ module.exports = {
       },
       fecha: {
         type: Sequelize.DATE,
+        primaryKey: true,
         allowNull: false
       }
     });

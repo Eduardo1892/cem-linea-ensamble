@@ -1,8 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { listarMaquinas } = require('../controllers/maquinaController')
+const { 
+    crearMaquina,
+    listarMaquinas,
+    modificarMaquina,
+    eliminarMaquina,
+    datosMaquina 
+} = require('../controllers/maquinaController')
 
 
-router.get('/listar', listarMaquinas)
+
+router.post('/crear', crearMaquina);
+router.get('/listar', listarMaquinas);
+router.put('/modificar', modificarMaquina);
+router.delete('/eliminar', eliminarMaquina);
+router.get('/datos/:codigoMaquina', datosMaquina);
 
 module.exports = router;

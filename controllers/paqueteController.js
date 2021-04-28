@@ -3,39 +3,24 @@ const uuidv4 = require('uuid').v4;
 const db = require('../config/db');
 
 const { 
-    UsuarioLectorFecha,
-    Paquete,
-    Maquina,
-    Items,
+    CodigoBarra,
     EstacionItem,
+    Estacion,
+    Items,
+    Maquina,
+    Paquete,
+    UsuarioLectorFecha,  
 } = db;
 
 
 const crearPaquetes = async (req, res) => {
 
-    const { codigoBarra, codigoLector, codigoMaquina } = req.body;
+    try {
 
-        const items = [{
-            codigoItem: 'A',
-            codigoBarras: 'CB1'
-        },{
-            codigoItem: 'B',
-            codigoBarras: 'CB2'
-        },{
-            codigoItem: 'C',
-            codigoBarras: 'CB3'
-        },{
-            codigoItem: 'D',
-            codigoBarras: 'CB4',
-        },{
-            codigoItem: 'A',
-            codigoBarras: 'CB5'
-        }
-    
-        ];
-
-        const codigoBarraExiste = items.filter(item => item.codigoBarras === codigoBarra)[0]
-
+        const { codigoBarra, codigoLector, codigoMaquina, codigoUsuario } = req.body;
+        let { codigoPaquete } = req.body;
+        
+        const codigoBarraExiste = await CodigoBarra.findByPk(codigoBarra)
         if(!codigoBarraExiste){
             return res.status(404).send({
                 msg: 'El codigo de barra no existe'
@@ -43,7 +28,7 @@ const crearPaquetes = async (req, res) => {
         }
 
         //Validar que el item existe.
-        let codigoItem = codigoBarraExiste.codigoItem;
+        let codigoItem = codigoBarraExiste.codigo_item;
         const itemExiste = await Items.findByPk(codigoItem)
         if(!itemExiste){
             return res.status(404).send({
@@ -51,29 +36,19 @@ const crearPaquetes = async (req, res) => {
             });
         }
 
-        //Obtiene el usuario según el lector y día trabajado.
-        const usuarioLectorFecha = await UsuarioLectorFecha.findOne({
+        //Valida que el código de barra no haya sido utilizado.
+        let codigoBarraProcesado = await Paquete.findOne({
             where: {
-                [Op.and] : [
-                    { codigo_lector: codigoLector },
-                    Sequelize.where(Sequelize.fn('DATE', Sequelize.col('fecha')), '=', Sequelize.fn('CURDATE')) 
-                ],
-            },
-            order: [
-                ['fecha', 'DESC'],
-            ],
-            limit: 1,
-            raw: true,
-
+                codigo_barra : codigoBarra,
+            }
         });
 
-        if(!usuarioLectorFecha){
-            return res.status(404).send({
-                msg: `El lector ${codigoLector} hoy no ha sido asociado a un usuario`
-            });
-        }
-
-        const codigoUsuario = usuarioLectorFecha.codigo_usuario;
+        if(codigoBarraProcesado){
+            return res.status(400).send({
+                msg: 'El código de barras ya fue procesado en un paquete'
+            })
+        }  
+        
 
         //Verifica que la máquina sea válida.
         const maquina = await Maquina.findOne({
@@ -89,8 +64,20 @@ const crearPaquetes = async (req, res) => {
         }
 
         const codigoEstacion = maquina.codigo_estacion;
+        
+        const estacionEsInicial = await Estacion.findOne({
+            where: {
+                codigo: codigoEstacion
+            }
+        });
 
-        //Verifica si el item es permitido en la estación.
+        if(estacionEsInicial.es_inicio === false && codigoPaquete === ''){
+            return res.status(404).send({
+                msg: 'Debe envíar el codigo del paquete'
+            });
+        }
+
+       //Verifica si el item es permitido en la estación.
         const itemPermitidoEstacion = await EstacionItem.findOne({
             where: {
                 codigo_estacion : codigoEstacion,
@@ -98,17 +85,20 @@ const crearPaquetes = async (req, res) => {
             },
             raw: true,
         });
-
-        //Obtengo la cantidad de items del tipo recibido que permite la estación.
-        const cantidadItemPermitido = itemPermitidoEstacion.cantidad;
-
+        
         if(!itemPermitidoEstacion){
+            console.log(`EL item ${codigoItem} no es permitido en la estación ${codigoEstacion}`)
             return res.status(404).send({
                 msg: `EL item ${codigoItem} no es permitido en la estación ${codigoEstacion}`
             })
         }
 
+        //Obtengo la cantidad de items del tipo recibido que permite la estación.
+        const cantidadItemPermitido = itemPermitidoEstacion.cantidad;
+
         //Consultar si existe un paquete en proceso para el lector en la estacion que está envíando el item
+        if(codigoPaquete === ''){
+        
         const paqueteEnProceso = await Paquete.findOne({
             where: {
                 finalizado : 0,
@@ -118,8 +108,7 @@ const crearPaquetes = async (req, res) => {
             raw: true,
         });
 
-        let codigoPaquete = '';
-
+        //let codigoPaquete = '';
         if(paqueteEnProceso){
 
             console.log('Hay un paquete sin finalizar');
@@ -147,9 +136,29 @@ const crearPaquetes = async (req, res) => {
 
         }
 
+        //si me paso el codigoPaquete
+        }else{
+
+            //Valido si el codigo de barra ya existe en el paquete que está en curso.
+            const codigoBarraExiste = await Paquete.findOne({
+                where: {
+                    codigo: codigoPaquete,
+                    codigo_item: codigoItem,
+                    codigo_estacion: codigoEstacion,
+                    codigo_barra : codigoBarra, 
+                }
+            })
+            if(codigoBarraExiste){
+                return res.status(400).send({
+                    msg: `El código de barras ${codigoBarra} ya existe en el paquete en proceso ${codigoPaquete}`
+                });
+            }
+
+        }
+
         //Verifica la cantidad de items que permite la estación.
         //cantidadItemPermitido
-        const cantidadItemProcesado = await Paquete.count({
+        let cantidadItemProcesado = await Paquete.count({
             where: {
                 codigo: codigoPaquete,
                 codigo_item: codigoItem,
@@ -165,7 +174,7 @@ const crearPaquetes = async (req, res) => {
 
      
         //Después de agregar el item al paquete, se debe validar si el paquete está completo
-        const paquete = await Paquete.create({
+        let paquete = await Paquete.create({
             codigo: codigoPaquete,
             codigo_item: codigoItem,
             codigo_estacion: codigoEstacion,
@@ -207,12 +216,13 @@ const crearPaquetes = async (req, res) => {
                     )) AS diferencia
                 FROM estaciones_items ei
                 WHERE ei.codigo_estacion = '${codigoEstacion}'
-            )tb WHERE diferencia > 0;
+            )tb;
         `;
         
-        //Si no hay items pendientes para el paquete, entonces lo marca como finalizado.
+        
         const itemsPendientesPaquete = await db.connection.query(qry, { type: QueryTypes.SELECT });
-        if(itemsPendientesPaquete.length === 0){
+        //Si no hay items pendientes para el paquete, entonces lo marca como finalizado.
+        if(itemsPendientesPaquete.filter(item => item.diferencia > 0).length === 0){
 
             await Paquete.update({
                 finalizado: true,
@@ -221,15 +231,136 @@ const crearPaquetes = async (req, res) => {
                     codigo: codigoPaquete,
                 }
             })
-
         }
 
+
         res.json({
-            paquete,
+            itemsPendientesPaquete,
+        }) 
+        
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({
+            msg:'Hubo un error'
+        })
+    }
+
+    
+
+}
+
+const extraerCodigoPaquete = async (req, res) => {
+
+        
+        const { codigoBarra, codigoMaquina } = req.query;
+        
+        const codigoBarraExiste = await CodigoBarra.findByPk(codigoBarra)
+        if(!codigoBarraExiste){
+            return res.status(404).send({
+                msg: `El codigo de barra ${codigoBarra} no existe`
+            });
+        }
+
+        //Verifica si el item existe
+        let codigoItem = codigoBarraExiste.codigo_item;
+        const itemExiste = await Items.findByPk(codigoItem)
+        if(!itemExiste){
+            return res.status(404).send({
+                msg: `El item ${codigoItem} del código de barras ${codigoBarra} no existe`
+            })
+        }
+
+        //Verifica si el paquete existe
+        const paqueteExiste = await Paquete.findOne({
+            where: {
+                codigo_item : codigoItem,
+                codigo_barra: codigoBarra,
+            },
+            raw: true,
+        });
+
+        if(!paqueteExiste){
+            return res.status(404).send({
+                msg: `El código de barras ${codigoBarra} no está asignado a ningún paquete`
+            });
+        }
+
+        //Verifica que la máquina sea válida.
+        const maquina = await Maquina.findOne({
+            where: {
+                codigo: codigoMaquina
+            }
+        });
+
+        if(!maquina){
+            return res.status(404).send({
+                msg: `La máquina ${codigoMaquina} no es valida.`
+            });
+        }
+        //Mediante la máquina obtiene el código estación.
+        const codigoEstacion = maquina.codigo_estacion;
+
+        //Verifica si el paquete viene finalizado de la estación anterior
+        const codigoPaquete = paqueteExiste.codigo
+
+        const paqueteFinalizado = await Paquete.findOne({
+            where: {
+                codigo: codigoPaquete,
+                codigo_estacion : {[Op.ne]: codigoEstacion},
+                finalizado: false
+            },
+            raw: true,
+        })
+
+        if(paqueteFinalizado){
+            const codigoEstacion = paqueteFinalizado.codigo_estacion
+            return res.status(404).send({
+                msg: `El paquete ${codigoPaquete} no está finalizado, devolver a estación ${codigoEstacion}`
+            });
+        }
+
+        let qry = `
+            SELECT 
+                codigo_estacion,
+                codigo_item,
+                cantidad,
+                cantidad_item_paquete,
+                (cantidad - cantidad_item_paquete) AS diferencia
+            FROM (
+                SELECT 
+                    codigo_estacion,
+                    codigo_item,
+                    cantidad,
+                    (SELECT COUNT(*) 
+                        FROM paquetes 
+                        WHERE 
+                        codigo = '${codigoPaquete}'
+                        AND codigo_item = ei.codigo_item
+                    ) AS cantidad_item_paquete,
+                    (cantidad -
+                    (SELECT COUNT(*) 
+                        FROM paquetes 
+                        WHERE codigo = '${codigoPaquete}'
+                        AND codigo_item = ei.codigo_item
+                    )) AS diferencia
+                FROM estaciones_items ei
+                WHERE ei.codigo_estacion = '${codigoEstacion}'
+            )tb;
+        `;
+        
+        console.log(qry)
+        
+        const itemsPendientesPaquete = await db.connection.query(qry, { type: QueryTypes.SELECT });
+        
+
+        res.json({
+            codigoPaquete,
             itemsPendientesPaquete,
         })
 
 }
+
+
 
 const listarPaquetes = async (req,res) => {
     res.json('entra')
@@ -237,5 +368,6 @@ const listarPaquetes = async (req,res) => {
 
 module.exports = {
     crearPaquetes,
+    extraerCodigoPaquete,
     listarPaquetes
 }

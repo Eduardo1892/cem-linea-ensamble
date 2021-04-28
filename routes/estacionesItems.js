@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { listarEstacionesItems } = require('../controllers/estacionItemController')
+const { 
+    crearEstacionItem,
+    listarEstacionesItems,
+    eliminarEstacionItem
+} = require('../controllers/estacionItemController')
 
 
-router.get('/listar', listarEstacionesItems)
+router.post('/crear', crearEstacionItem);
+router.get('/listar', listarEstacionesItems);
+router.delete('/eliminar', eliminarEstacionItem);
 
 module.exports = router;

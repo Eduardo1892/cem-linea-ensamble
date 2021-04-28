@@ -15,6 +15,7 @@ module.exports = {
       },
       inactivo: {
         type: Sequelize.BOOLEAN,
+        defaultValue: false,
       }
     });
   },

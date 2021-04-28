@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { listarUsuariosLectoresFecha } = require('../controllers/usuarioLectorFechaController')
+const { crearUsuariosLectoresFecha, listarUsuariosLectoresFecha } = require('../controllers/usuarioLectorFechaController')
 
-
-router.get('/listar', listarUsuariosLectoresFecha)
+router.post('/crear', crearUsuariosLectoresFecha);
+router.get('/listar', listarUsuariosLectoresFecha);
 
 module.exports = router;

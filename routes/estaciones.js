@@ -1,8 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { listarEstaciones } = require('../controllers/estacionController')
+const { 
+    crearEstacion,
+    listarEstaciones,
+    modificarEstacion,
+    eliminarEstacion, 
+} = require('../controllers/estacionController')
 
 
-router.get('/listar', listarEstaciones)
+router.post('/crear', crearEstacion);
+router.get('/listar', listarEstaciones);
+router.put('/modificar', modificarEstacion);
+router.delete('/eliminar/:codigo', eliminarEstacion);
 
 module.exports = router;

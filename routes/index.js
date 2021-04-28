@@ -1,11 +1,5 @@
 const express = require('express');
 const app = express();
-const router = express.Router();
-
-
-
-//Home
-router.get('/', (req, res) => res.json({ foo: 'bar'}));
 
 app.use('/api/auth/', require('./auth'));
 app.use('/api/usuarios/', require('./usuarios'));
@@ -21,5 +15,4 @@ app.use('/api/lectores/', require('./lectores'));
 app.use('/api/usuarios-lectores-fecha/', require('./usuariosLectoresFecha'));
 app.use('/api/paquetes/', require('./paquetes'));
 
-module.exports = router; 
 module.exports = app;
