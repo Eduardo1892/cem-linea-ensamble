@@ -3,16 +3,19 @@ const router = express.Router();
 
 const { 
     crearItem,
-    listarItems,
+    buscarItems,
     modificarItem,
     eliminarItem,
+    listarItems,
 } = require('../controllers/itemController')
 
 
 router.post('/crear', crearItem);
-router.get('/listar', listarItems);
+router.get('/buscar', buscarItems);
 router.put('/modificar', modificarItem);
-router.delete('/eliminar', eliminarItem);
+router.delete('/eliminar/:codigo', eliminarItem);
+
+router.get('/listar', listarItems);
 
 
 module.exports = router;

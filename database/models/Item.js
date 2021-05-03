@@ -3,7 +3,7 @@
 
 module.exports = (sequelize, DataTypes) => {
   
-  return sequelize.define('Item', {
+  return sequelize.define('item', {
 
     codigo: {
       type: DataTypes.STRING(128),

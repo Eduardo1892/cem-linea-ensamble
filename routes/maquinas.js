@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { 
     crearMaquina,
-    listarMaquinas,
+    buscarMaquinas,
     modificarMaquina,
     eliminarMaquina,
     datosMaquina 
@@ -11,7 +11,7 @@ const {
 
 
 router.post('/crear', crearMaquina);
-router.get('/listar', listarMaquinas);
+router.get('/buscar', buscarMaquinas);
 router.put('/modificar', modificarMaquina);
 router.delete('/eliminar', eliminarMaquina);
 router.get('/datos/:codigoMaquina', datosMaquina);

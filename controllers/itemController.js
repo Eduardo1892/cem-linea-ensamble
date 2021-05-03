@@ -1,6 +1,5 @@
 const { Items } = require('../config/db')
-
-
+const { Sequelize, Op } = require('sequelize');
 
 const crearItem = async (req, res) => {
     try {
@@ -43,7 +42,7 @@ const crearItem = async (req, res) => {
     }
 }
 
-const listarItems = async (req,res) => {
+const buscarItems = async (req,res) => {
 
     try{
 
@@ -55,7 +54,7 @@ const listarItems = async (req,res) => {
             });
         }
 
-        const item = await Items.findAll({
+        const items = await Items.findAll({
             where: Sequelize.where(Sequelize.fn("concat", Sequelize.col("codigo"), Sequelize.col("descripcion")), {
                 [Op.like]: `%${filtro}%`
             }),
@@ -65,7 +64,7 @@ const listarItems = async (req,res) => {
         });
 
         res.json({
-            item
+            items
         })
 
     } catch (error) {
@@ -124,6 +123,7 @@ const eliminarItem = async (req, res) => {
     try {
 
         const { codigo } = req.params;
+
         let item = await Items.findByPk(codigo);
 
         if (!item) {
@@ -151,10 +151,24 @@ const eliminarItem = async (req, res) => {
     }
 }
 
+const listarItems = async (req, res) => {
+
+    const items = await Items.findAll({
+        order: [
+            ['descripcion', 'ASC'],
+        ] 
+    })
+
+    res.json({
+        items
+    })
+
+}
+
 module.exports = {
     crearItem,
-    listarItems,
+    buscarItems,
     modificarItem,
     eliminarItem,
-
+    listarItems,
 }

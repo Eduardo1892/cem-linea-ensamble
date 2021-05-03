@@ -1,11 +1,15 @@
 const { Maquina, Estacion } = require('../config/db');
+const { Sequelize, Op } = require('sequelize');
+
 
 
 
 const crearMaquina = async (req, res) => {
     
     try {
-        const { codigo, descripcion, codigo_estacion } = req.body;
+        const { codigo, descripcion, codigoEstacion } = req.body;
+
+        console.log(codigo, descripcion, codigoEstacion)
 
         if(!codigo || codigo.trim() === ""){
             return res.status(400).send({
@@ -19,7 +23,7 @@ const crearMaquina = async (req, res) => {
             });
         }
 
-        if(!codigo_estacion || codigo_estacion.trim() === ""){
+        if(!codigoEstacion || codigoEstacion.trim() === ""){
             return res.status(400).send({
                 msg: 'Codigo estación es requerido'
             });
@@ -33,7 +37,7 @@ const crearMaquina = async (req, res) => {
             });
         }
 
-        let estacion = await Estacion.findByPk(codigo_estacion);
+        let estacion = await Estacion.findByPk(codigoEstacion);
         if (!estacion) {
             return res.status(400).json({
                 msg: 'la estación ingresada no es valida'
@@ -43,7 +47,7 @@ const crearMaquina = async (req, res) => {
         maquina = await Maquina.create({
             codigo,
             descripcion,
-            codigo_estacion
+            codigo_estacion: codigoEstacion
         });
 
         res.json({
@@ -58,9 +62,24 @@ const crearMaquina = async (req, res) => {
     }
 }
 
-const listarMaquinas = async (req, res) => {
+const buscarMaquinas = async (req, res) => {
     try {
-        const maquinas = await Maquina.findAll();
+
+        const { filtro, codigoEstacion } = req.query;
+
+        const maquinas = await Maquina.findAll({
+            where: {
+                [Op.and]:[
+                    Sequelize.where(Sequelize.fn("concat", Sequelize.col("codigo"), Sequelize.col("descripcion")), {
+                        [Op.like]: `%${filtro}%`
+                    }),
+                    { codigo_estacion: {[Op.eq]: codigoEstacion } }
+                ]
+            },
+            order: [
+                ['descripcion', 'ASC'],
+            ] 
+        });
 
         res.json({
             maquinas
@@ -77,7 +96,8 @@ const listarMaquinas = async (req, res) => {
 const modificarMaquina = async (req, res) => {
 
     try {
-        const { codigo, descripcion, codigo_estacion } = req.body;
+        const { codigo, descripcion, codigoEstacion } = req.body;
+
 
         if(!codigo || codigo.trim() === ""){
             return res.status(400).send({
@@ -91,7 +111,7 @@ const modificarMaquina = async (req, res) => {
             });
         }
 
-        if(!codigo_estacion || codigo_estacion.trim() === ""){
+        if(!codigoEstacion || codigoEstacion.trim() === ""){
             return res.status(400).send({
                 msg: 'Codigo estación es requerido'
             });
@@ -104,16 +124,16 @@ const modificarMaquina = async (req, res) => {
             });
         }
 
-        let estacion = await Estacion.findByPk(codigo_estacion);
+        let estacion = await Estacion.findByPk(codigoEstacion);
         if (!estacion) {
             return res.status(400).send({
-                msg: `La estación ${codigo_estacion} no existe`
+                msg: `La estación ${codigoEstacion} no existe`
             });
         }
 
         maquina = await Maquina.update({
             descripcion,
-            codigo_estacion,
+            codigo_estacion: codigoEstacion,
         }, {
             where: {
                 codigo
@@ -199,7 +219,7 @@ const eliminarMaquina = async (req, res) => {
 
 module.exports = {
     crearMaquina,
-    listarMaquinas,
+    buscarMaquinas,
     modificarMaquina,
     eliminarMaquina,
     datosMaquina,

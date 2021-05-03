@@ -3,7 +3,7 @@
 
 module.exports = (sequelize, DataTypes) => {
 
-  return sequelize.define('Estacion', {
+  return sequelize.define('estacion', {
     
     codigo: {
       type: DataTypes.STRING(128),

@@ -1,4 +1,5 @@
 const { Lector } = require('../config/db')
+const { Sequelize, Op } = require('sequelize');
 
 
 const crearLector = async (req, res) => {
@@ -36,29 +37,28 @@ const crearLector = async (req, res) => {
     }
 }
 
-const listarLectores = async (req,res) => {
+const buscarLectores = async (req,res) => {
 
     try{
 
-        const { filtro } = req.query;
+        const { codigo } = req.query;
 
-        if(!filtro || filtro.trim() === ''){
+        if(!codigo || codigo.trim() === ''){
             return res.status(400).send({
-                msg: 'Filtro es requerido'
+                msg: 'Codigo es requerido'
             });
         }
 
-        const lector = await Lector.findAll({
+        const lectores = await Lector.findAll({
             where: {
                 codigo: {
-                    [Op.like]: '%' + filtro + '%',
-                },
-                inactivo: false
+                    [Op.like]: '%' + codigo + '%',
+                }
             }
         });
 
         res.json({
-            lector
+            lectores
         })
 
     } catch (error) {
@@ -141,7 +141,7 @@ const eliminarLector = async (req, res) => {
 
 module.exports = {
     crearLector,
-    listarLectores,
+    buscarLectores,
     modificarLector,
     eliminarLector,
 }

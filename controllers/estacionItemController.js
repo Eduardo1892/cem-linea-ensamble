@@ -1,18 +1,19 @@
-const { EstacionItem } = require('../config/db');
+const { EstacionItem, Estacion, Items } = require('../config/db');
+const { Sequelize, Op } = require('sequelize');
 
 
 const crearEstacionItem = async (req, res) => {
     try {
 
-        const { codigo_estacion, codigo_item, cantidad } = req.body;
+        const { codigoEstacion, codigoItem, cantidad } = req.body;
 
-        if(!codigo_estacion || codigo_estacion.trim() === ""){
+        if(!codigoEstacion || codigoEstacion.trim() === ""){
             return res.status(400).send({
                 msg: 'Código de la estación es requerido'
             });
         }
 
-        if(!codigo_item || codigo_item.trim() === ""){
+        if(!codigoItem || codigoItem.trim() === ""){
             return res.status(400).send({
                 msg: 'Código del item es requerido'
             });
@@ -24,11 +25,28 @@ const crearEstacionItem = async (req, res) => {
             });
         }
 
-        //verifica si existe la combinación pregunta vs modulo.
+
+        //verifica si existe la estación
+        let estacion = await Estacion.findByPk(codigoEstacion);
+        if(!estacion) {
+            return res.status(400).json({
+                msg: 'la estación ingresada no es valida'
+            });
+        }
+
+        //verifica si existe el item
+        let item = await Items.findByPk(codigoItem);
+        if(!item) {
+            return res.status(400).json({
+                msg: 'El item ingresado no es valido'
+            });
+        }
+
+        //verifica si existe la combinación estación vs item.
         let estacionItem = await EstacionItem.findAll({
             where: {
-                codigo_estacion,
-                codigo_item
+                codigo_estacion: codigoEstacion,
+                codigo_item: codigoItem,
             }
         });
 
@@ -40,8 +58,8 @@ const crearEstacionItem = async (req, res) => {
 
         //Guarda la nueva relacion entre pregunta vs modulo.
         estacionItem = await EstacionItem.create({
-            codigo_estacion,
-            codigo_item,
+            codigo_estacion: codigoEstacion,
+            codigo_item: codigoItem,
             cantidad
         });
 
@@ -58,7 +76,7 @@ const crearEstacionItem = async (req, res) => {
     }
 }
 
-const listarEstacionesItems = async (req,res) => {
+const buscarEstacionesItems = async (req,res) => {
     try {
         const estacionItem = await EstacionItem.findAll();
 
@@ -77,15 +95,16 @@ const listarEstacionesItems = async (req,res) => {
 const eliminarEstacionItem = async (req, res) => {
     try {
         //obtengo el codigo del request
-        const { codigo_estacion } = req.params;
-        const { codigo_item } = req.query;
+        const { codigoEstacion, codigoItem } = req.params;
+
+        console.log(codigoEstacion, codigoItem)
 
 
         //verifica si existe la combinación pregunta vs modulo.
         let estacionItem = await EstacionItem.findAll({
             where: {
-                codigo_estacion,
-                codigo_item
+                codigo_estacion: codigoEstacion,
+                codigo_item: codigoItem
             }
         });
 
@@ -98,8 +117,8 @@ const eliminarEstacionItem = async (req, res) => {
         //elimino el registro.
         estacionItem = await EstacionItem.destroy({
             where: {
-                codigo_estacion,
-                codigo_item
+                codigo_estacion: codigoEstacion,
+                codigo_item: codigoItem
             }
         });
 
@@ -116,8 +135,37 @@ const eliminarEstacionItem = async (req, res) => {
     }
 }
 
+const listarItemsEstacion = async (req, res) => {
+
+    const { codigoEstacion } = req.query;
+
+    const items = await Items.findAll({
+        attributes:[
+            'codigo',
+            'descripcion',
+            [Sequelize.literal(`IFNULL((SELECT cantidad
+            FROM estaciones_items 
+            WHERE codigo_item = item.codigo 
+            AND codigo_estacion = '${codigoEstacion}'), '0')    `),'cant_requerida'],
+            [Sequelize.literal(`(SELECT COUNT(*)
+            FROM estaciones_items 
+            WHERE codigo_item = item.codigo 
+            AND codigo_estacion = '${codigoEstacion}')`),'selected']
+        ],
+        order: [
+            ['descripcion', 'ASC'],
+        ] 
+    })
+
+    res.json({
+        items   
+    })
+
+}
+
 module.exports = {
     crearEstacionItem,
-    listarEstacionesItems,
+    buscarEstacionesItems,
     eliminarEstacionItem,
+    listarItemsEstacion,
 }

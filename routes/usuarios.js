@@ -3,15 +3,18 @@ const router = express.Router();
 
 const { 
     crearUsuario,
-    listarUsuarios,
+    buscarUsuarios,
     modificarUsuario,
     eliminarUsuario,
+    listarUsuarios
 } = require('../controllers/usuarioController')
 
 router.post('/crear', crearUsuario);
-router.get('/listar', listarUsuarios);
+router.get('/buscar', buscarUsuarios);
 router.put('/modificar', modificarUsuario);
-router.delete('/eliminar', eliminarUsuario);
+router.delete('/eliminar/:codigo', eliminarUsuario);
+
+router.get('/listar', listarUsuarios)
 
 
 module.exports = router;

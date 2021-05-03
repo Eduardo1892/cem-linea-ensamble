@@ -56,7 +56,7 @@ const crearUsuario = async (req, res) => {
 
 }
 
-const listarUsuarios = async (req,res) => {
+const buscarUsuarios = async (req,res) => {
 
     try{
 
@@ -174,9 +174,27 @@ const eliminarUsuario = async (req, res) => {
     }
 }
 
+const listarUsuarios = async (req, res) => {
+
+    const usuarios = await Usuario.findAll({
+        where:{
+            inactivo: 0
+        },
+        order: [
+            ['nombre', 'ASC'],
+        ] 
+    })
+
+    res.json({
+        usuarios
+    })
+
+}
+
 module.exports = {
     crearUsuario,
-    listarUsuarios,
+    buscarUsuarios,
     modificarUsuario,
     eliminarUsuario,
+    listarUsuarios,
 }

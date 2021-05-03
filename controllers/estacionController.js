@@ -9,6 +9,7 @@ const crearEstacion = async (req, res) => {
 
         const { codigo, descripcion, es_inicio, es_termino, es_qa } = req.body;
 
+
         if(!codigo || codigo.trim() === ""){
             return res.status(400).send({
                 msg: 'Código es requerido'
@@ -48,7 +49,7 @@ const crearEstacion = async (req, res) => {
     }
 }
 
-const listarEstaciones = async (req, res) => {
+const buscarEstaciones = async (req, res) => {
 
     try{
 
@@ -134,7 +135,6 @@ const eliminarEstacion = async (req, res) => {
 
         const { codigo } = req.params;
 
-        console.log(codigo)
 
         let estacion = await Estacion.findByPk(codigo);
 
@@ -163,9 +163,27 @@ const eliminarEstacion = async (req, res) => {
     }
 }
 
+const listarEstaciones = async (req, res) => {
+
+    const estaciones = await Estacion.findAll({
+        order: [
+            ['descripcion', 'ASC'],
+        ] 
+    })
+
+    res.json({
+        estaciones
+    })
+
+
+}
+
+
+
 module.exports = {
     crearEstacion,
-    listarEstaciones,
+    buscarEstaciones,
     modificarEstacion,
     eliminarEstacion,
+    listarEstaciones,
 }
