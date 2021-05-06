@@ -16,6 +16,9 @@ module.exports = (sequelize, DataTypes) => {
     es_inicio: {
       type: DataTypes.BOOLEAN
     },
+    es_proceso: {
+      type: DataTypes.BOOLEAN
+    },
     es_termino: {
       type: DataTypes.BOOLEAN
     },

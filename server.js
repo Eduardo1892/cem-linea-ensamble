@@ -33,10 +33,15 @@ io.sockets.on('connection', socket => {
 
     //socketEvents(socket)
 
-    socket.on('saludar', (data) => {
+    socket.on('saludar', (data, callback) => {
         console.log(data)
+        callback()
+        socket.emit('recibir-saludo-'+data.usuario, {
+            data: 'hola'
+        })
         
     })
+
 
     socket.on('disconnect', () => {
         console.log('Cliente desconectado! quedan',io.engine.clientsCount)

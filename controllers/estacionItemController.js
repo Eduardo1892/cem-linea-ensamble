@@ -97,7 +97,7 @@ const eliminarEstacionItem = async (req, res) => {
         //obtengo el codigo del request
         const { codigoEstacion, codigoItem } = req.params;
 
-        console.log(codigoEstacion, codigoItem)
+        
 
 
         //verifica si existe la combinación pregunta vs modulo.

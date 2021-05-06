@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector) => {
+module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector, CodigoQa) => {
   return sequelize.define('Paquete', {
     
     codigo: {
@@ -8,10 +8,14 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
       primaryKey: true,
       allowNull: false,
     },
-    codigo_item: {
-      type: DataTypes.STRING(128),
+    numero: {
+      type: DataTypes.INTEGER,
       primaryKey: true,
       allowNull: false,
+    },
+    codigo_item: {
+      type: DataTypes.STRING(128),
+      allowNull: true,
       references:{
         model: Item,
         key: 'codigo'
@@ -19,7 +23,6 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
     },
     codigo_estacion: {
       type: DataTypes.STRING(128),
-      primaryKey: true,
       allowNull: false,
       references:{
         model: Estacion,
@@ -28,8 +31,7 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
     },
     codigo_barra: {
       type: DataTypes.STRING(128),
-      primaryKey: true,
-      allowNull: false,
+      allowNull: true,
     },
     codigo_maquina: {
       type: DataTypes.STRING(128),
@@ -54,6 +56,17 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
         model: Lector,
         key: 'codigo'
       }
+    },
+    codigo_qa: {
+      type: DataTypes.STRING(128),
+      allowNull: true,
+      references:{
+        model: CodigoQa,
+        key: 'codigo'
+      }
+    },
+    observacion: {
+      type: DataTypes.STRING(128)
     },
     fecha_sys: {
       type: DataTypes.DATEONLY,

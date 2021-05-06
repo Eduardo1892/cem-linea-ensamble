@@ -15,4 +15,6 @@ app.use('/api/lectores/', require('./lectores'));
 app.use('/api/usuarios-lectores-fecha/', require('./usuariosLectoresFecha'));
 app.use('/api/paquetes/', require('./paquetes'));
 
+app.use('/api/dashboard/', require('./dashboard'));
+
 module.exports = app;
