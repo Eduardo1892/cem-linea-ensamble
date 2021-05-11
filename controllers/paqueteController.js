@@ -18,7 +18,7 @@ const crearPaquetes = async (req, res) => {
 
     try {
 
-        const { codigoBarra, codigoLector, codigoEstacion, codigoMaquina, codigoUsuario, codigoQa, observacion } = req.body;
+        const { codigoBarra, codigoLector, codigoEstacion, codigoMaquina, codigoUsuario } = req.body;
         let { codigoPaquete } = req.body;
 
         if(!codigoBarra || codigoBarra.trim() === ""){
@@ -52,17 +52,6 @@ const crearPaquetes = async (req, res) => {
             });      
         }
 
-        if(!codigoQa || codigoQa.trim() === ""){
-            return res.status(400).send({
-                msg: 'Código QA es requerido'
-            });      
-        }
-
-        if(!observacion || observacion.trim() === ""){
-            return res.status(400).send({
-                msg: 'Observación es requerida'
-            });      
-        }
         
         const codigoBarraExiste = await CodigoBarra.findByPk(codigoBarra)
         if(!codigoBarraExiste){
@@ -84,13 +73,17 @@ const crearPaquetes = async (req, res) => {
         let codigoBarraProcesado = await Paquete.findOne({
             where: {
                 codigo_barra : codigoBarra,
-            }
+            },
+            raw: true,
         });
 
-        if(codigoBarraProcesado){
-            return res.status(400).send({
-                msg: 'El código de barras ya fue procesado en un paquete'
-            })
+         
+
+        if(codigoBarraProcesado){            
+            const itemsPendientesPaquete = await datosPaquete(codigoBarraProcesado.codigo, codigoEstacion)
+            return res.json({
+                itemsPendientesPaquete
+            })  
         }  
         
 
@@ -233,8 +226,6 @@ const crearPaquetes = async (req, res) => {
             codigo_maquina: codigoMaquina,
             codigo_usuario: codigoUsuario,
             codigo_lector: codigoLector,
-            codigo_qa: codigoQa,
-            observacion,
             codigo_barra: codigoBarra,
             fecha_sys: Sequelize.literal('CURDATE()'),
             hora_sys: Sequelize.literal('CURTIME()'),
@@ -243,38 +234,9 @@ const crearPaquetes = async (req, res) => {
 
         //Si el paquete cumple con todos los items exigidos en la estación, entonces el paquete
         //se finaliza.
+        
+        const itemsPendientesPaquete = await datosPaquete(codigoPaquete, codigoEstacion)
 
-        let qry = `
-            SELECT 
-                codigo_estacion,
-                codigo_item,
-                cantidad,
-                cantidad_item_paquete,
-                (cantidad - cantidad_item_paquete) AS diferencia
-            FROM (
-                SELECT 
-                    codigo_estacion,
-                    codigo_item,
-                    cantidad,
-                    (SELECT COUNT(*) 
-                        FROM paquetes 
-                        WHERE 
-                        codigo = '${codigoPaquete}'
-                        AND codigo_item = ei.codigo_item
-                    ) AS cantidad_item_paquete,
-                    (cantidad -
-                    (SELECT COUNT(*) 
-                        FROM paquetes 
-                        WHERE codigo = '${codigoPaquete}'
-                        AND codigo_item = ei.codigo_item
-                    )) AS diferencia
-                FROM estaciones_items ei
-                WHERE ei.codigo_estacion = '${codigoEstacion}'
-            )tb;
-        `;
-        
-        
-        const itemsPendientesPaquete = await db.connection.query(qry, { type: QueryTypes.SELECT });
         //Si no hay items pendientes para el paquete, entonces lo marca como finalizado.
         if(itemsPendientesPaquete.filter(item => item.diferencia > 0).length === 0){
 
@@ -449,39 +411,8 @@ const extraerCodigoPaquete = async (req, res) => {
                 msg: `El paquete ${codigoPaquete} no está finalizado, devolver a estación ${codigoEstacion}`
             });
         }
-
-        let qry = `
-            SELECT 
-                codigo_estacion,
-                codigo_item,
-                cantidad,
-                cantidad_item_paquete,
-                (cantidad - cantidad_item_paquete) AS diferencia
-            FROM (
-                SELECT 
-                    codigo_estacion,
-                    codigo_item,
-                    cantidad,
-                    (SELECT COUNT(*) 
-                        FROM paquetes 
-                        WHERE 
-                        codigo = '${codigoPaquete}'
-                        AND codigo_item = ei.codigo_item
-                    ) AS cantidad_item_paquete,
-                    (cantidad -
-                    (SELECT COUNT(*) 
-                        FROM paquetes 
-                        WHERE codigo = '${codigoPaquete}'
-                        AND codigo_item = ei.codigo_item
-                    )) AS diferencia
-                FROM estaciones_items ei
-                WHERE ei.codigo_estacion = '${codigoEstacion}'
-            )tb;
-        `;
         
-       
-        
-        const itemsPendientesPaquete = await db.connection.query(qry, { type: QueryTypes.SELECT });
+        const itemsPendientesPaquete = await datosPaquete(codigoPaquete, codigoEstacion);
         
 
         res.json({
@@ -490,7 +421,6 @@ const extraerCodigoPaquete = async (req, res) => {
         })
 
 }
-
 
 const listarPaquetes = async (req,res) => {
     
@@ -544,6 +474,48 @@ const listarPaquetes = async (req,res) => {
 
 }
 
+const datosPaquete = async (codigoPaquete, codigoEstacion) => {
+
+    
+    let qry = `
+    SELECT 
+        codigo_estacion,
+        codigo_item,
+        cantidad,
+        cantidad_item_paquete,
+        (cantidad - cantidad_item_paquete) AS diferencia
+    FROM (
+        SELECT 
+            codigo_estacion,
+            codigo_item,
+            cantidad,
+            (SELECT COUNT(*) 
+                FROM paquetes 
+                WHERE 
+                codigo = '${codigoPaquete}'
+                AND codigo_item = ei.codigo_item
+            ) AS cantidad_item_paquete,
+            (cantidad -
+            (SELECT COUNT(*) 
+                FROM paquetes 
+                WHERE codigo = '${codigoPaquete}'
+                AND codigo_item = ei.codigo_item
+            )) AS diferencia
+        FROM estaciones_items ei
+        WHERE ei.codigo_estacion IN ('${codigoEstacion}', 
+            (SELECT DISTINCT codigo_estacion 
+                FROM paquetes 
+            WHERE codigo = '${codigoPaquete}') 
+        )
+    )tb
+    ORDER BY diferencia DESC;
+    `;
+
+    console.log(qry)
+
+    return await db.connection.query(qry, { type: QueryTypes.SELECT });
+
+}
 
 
 

@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes, Estacion, Item) => {
     cantidad: {
       type: DataTypes.INTEGER,
       defaultValue: 1,
+    },
+    cantidad_registra_paquete: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     }
 
   }, {

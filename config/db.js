@@ -17,7 +17,7 @@ const EstacionOrigenVsEstacionDestinoModel = require('../database/models/Estacio
 const PaqueteModel = require('../database/models/Paquete');
 const CodigoBarraModel = require('../database/models/CodigoBarras');
 const CodigoQAModel = require('../database/models/CodigoQA');
-
+const EstacionStockModel = require('../database/models/EstacionStock')
 
 //Creamos una instancia del modelo,
 db.Usuario = UsuarioModel(db.connection, DataTypes);
@@ -35,6 +35,7 @@ db.UsuarioLectorFecha = UsuarioLectorFechaModel(db.connection, DataTypes, db.Usu
 db.EstacionItem = EstacionItemModel(db.connection, DataTypes, db.Estacion, db.Items);
 db.Paquete = PaqueteModel(db.connection, DataTypes, db.Items, db.Estacion, db.Maquina, db.Usuario, db.Lector, db.CodigoQa);
 db.CodigoBarra = CodigoBarraModel(db.connection, DataTypes, db.Items);
+db.EstacionStock = EstacionStockModel(db.connection, DataTypes);
 
 
 

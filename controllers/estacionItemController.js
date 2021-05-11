@@ -5,7 +5,7 @@ const { Sequelize, Op } = require('sequelize');
 const crearEstacionItem = async (req, res) => {
     try {
 
-        const { codigoEstacion, codigoItem, cantidad } = req.body;
+        const { codigoEstacion, codigoItem, cantidad, cantidadRegistraPaquete } = req.body;
 
         if(!codigoEstacion || codigoEstacion.trim() === ""){
             return res.status(400).send({
@@ -22,6 +22,12 @@ const crearEstacionItem = async (req, res) => {
         if(!cantidad || cantidad.trim() === ""){
             return res.status(400).send({
                 msg: 'Cantidad es requerida'
+            });
+        }
+
+        if(!cantidadRegistraPaquete || cantidadRegistraPaquete.trim() === ""){
+            return res.status(400).send({
+                msg: 'Cantidad registra paquete es requerida'
             });
         }
 
@@ -60,7 +66,8 @@ const crearEstacionItem = async (req, res) => {
         estacionItem = await EstacionItem.create({
             codigo_estacion: codigoEstacion,
             codigo_item: codigoItem,
-            cantidad
+            cantidad,
+            cantidad_registra_paquete: cantidadRegistraPaquete,
         });
 
         //envía la respuesta

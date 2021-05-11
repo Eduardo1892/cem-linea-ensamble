@@ -68,6 +68,11 @@ module.exports = (sequelize, DataTypes, Item, Estacion, Maquina, Usuario, Lector
     observacion: {
       type: DataTypes.STRING(128)
     },
+    cantidad_item: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
     fecha_sys: {
       type: DataTypes.DATEONLY,
     },
