@@ -104,9 +104,6 @@ const eliminarEstacionItem = async (req, res) => {
         //obtengo el codigo del request
         const { codigoEstacion, codigoItem } = req.params;
 
-        
-
-
         //verifica si existe la combinación pregunta vs modulo.
         let estacionItem = await EstacionItem.findAll({
             where: {
@@ -154,6 +151,10 @@ const listarItemsEstacion = async (req, res) => {
             FROM estaciones_items 
             WHERE codigo_item = item.codigo 
             AND codigo_estacion = '${codigoEstacion}'), '0')    `),'cant_requerida'],
+            [Sequelize.literal(`IFNULL((SELECT cantidad_registra_paquete
+                FROM estaciones_items 
+                WHERE codigo_item = item.codigo 
+                AND codigo_estacion = '${codigoEstacion}'), '0')    `),'cant_registra_paquete'],
             [Sequelize.literal(`(SELECT COUNT(*)
             FROM estaciones_items 
             WHERE codigo_item = item.codigo 

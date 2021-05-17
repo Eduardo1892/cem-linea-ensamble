@@ -2,7 +2,6 @@ const {Estacion, EstacionOrigenVsEstacionDestino} = require('../config/db');
 const { Sequelize, Op } = require('sequelize');
 
 
-
 const crearEstacionOrigenVsEstacionDestino = async (req, res) => {
     try {
 

@@ -50,5 +50,9 @@ db.Paquete.belongsTo(db.Items, {as: 'item', foreignKey:'codigo_item'});
 db.Paquete.belongsTo(db.Estacion, {as: 'estacion', foreignKey:'codigo_estacion'});
 db.Paquete.belongsTo(db.Usuario, {as: 'usuario', foreignKey:'codigo_usuario'});
 db.Paquete.belongsTo(db.Maquina, {as: 'maquina', foreignKey:'codigo_maquina'});
+
+db.EstacionStock.belongsTo(db.Items, {as: 'item', foreignKey:'codigo_item'});
+db.EstacionStock.belongsTo(db.Estacion, {as: 'estacion', foreignKey:'codigo_estacion'});
+db.EstacionStock.belongsTo(db.Usuario, {as: 'usuario', foreignKey:'codigo_usuario'});
  
 module.exports = db;

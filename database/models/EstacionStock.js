@@ -1,16 +1,19 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes, Estacion, Item) => {
+module.exports = (sequelize, DataTypes, Estacion, Item, Usuario) => {
   return sequelize.define('EstacionStock', {
 
-    codigo_barra: {
+    codigo: {
       type: DataTypes.STRING(128),
       primaryKey: true,
       allowNull: false,
     },
+    codigo_barra: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+    },
     codigo_item: {
       type: DataTypes.STRING(128),
-      primaryKey: true,
       allowNull: false,
       references:{
           model: Item,
@@ -19,7 +22,6 @@ module.exports = (sequelize, DataTypes, Estacion, Item) => {
     },
     codigo_estacion: {
       type: DataTypes.STRING(128),
-      primaryKey: true,
       allowNull: false,
       references:{
           model: Estacion,
@@ -36,6 +38,18 @@ module.exports = (sequelize, DataTypes, Estacion, Item) => {
     },
     cantidad_disponible: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    codigo_usuario: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+      references:{
+          model: Usuario,
+          key: 'codigo'
+      }
+    },
+    fecha_hora_entrega: {
+      type: DataTypes.DATE,
       allowNull: false,
     }
 

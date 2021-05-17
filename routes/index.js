@@ -19,4 +19,6 @@ app.use('/api/dashboard/', require('./dashboard'));
 
 app.use('/api/estacion-stock', require('./estacionStock'));
 
+app.use('/api/codigo-barra', require('./codigoBarras'));
+
 module.exports = app;

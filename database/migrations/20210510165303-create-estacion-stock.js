@@ -2,9 +2,13 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('estaciones_stock', {
-      codigo_barra: {
+      codigo: {
         type: Sequelize.STRING(128),
         primaryKey: true,
+        allowNull: false,
+      },
+      codigo_barra: {
+        type: Sequelize.STRING(128),
         allowNull: false,
       },
       codigo_item: {
@@ -33,6 +37,18 @@ module.exports = {
       },
       cantidad_disponible: {
         type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      codigo_usuario: {
+        type: Sequelize.STRING(128),
+        allowNull: false,
+        references: {
+            model: 'usuarios',
+            key: 'codigo'
+        }
+      },
+      fecha_hora_entrega: {
+        type: Sequelize.DATE,
         allowNull: false
       }
     });
